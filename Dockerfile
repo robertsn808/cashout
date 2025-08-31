@@ -14,6 +14,8 @@ COPY . /app
 # Install PHP deps & prep Laravel
 RUN cd /app/casino && composer install --no-dev --optimize-autoloader --no-interaction \
  && php artisan key:generate --force \
+ && mkdir -p public \
+ && echo '<?php require_once __DIR__."/../bootstrap/app.php"; $app = require_once __DIR__."/../bootstrap/app.php"; $app->run();' > public/index.php \
  && php artisan storage:link || true
 
 # Node for PTWebSocket daemons

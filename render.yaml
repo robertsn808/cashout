@@ -15,6 +15,10 @@ services:
         value: https://captain-cashout.onrender.com
       - key: DB_CONNECTION
         value: pgsql
+      - key: DB_CHARSET
+        value: utf8
+      - key: DB_COLLATION
+        value: utf8_unicode_ci
       - key: DB_HOST
         value: 127.0.0.1
       - key: DB_PORT
