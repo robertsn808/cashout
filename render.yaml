@@ -15,11 +15,11 @@ services:
       - key: APP_URL
         value: https://captain-cashout.onrender.com
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
         value: 127.0.0.1
       - key: DB_PORT
-        value: 3306
+        value: 5432
       - key: DB_DATABASE
         value: casino_db
       - key: DB_USERNAME
