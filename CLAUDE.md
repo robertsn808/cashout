@@ -1,0 +1,1 @@
+- Never add your signature to a commit
