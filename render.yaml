@@ -22,7 +22,7 @@ services:
       - key: DB_HOST
         value: 127.0.0.1
       - key: DB_PORT
-        value: 5432
+        value: 5469
       - key: DB_DATABASE
         value: casino_db
       - key: DB_USERNAME
@@ -41,3 +41,7 @@ services:
         value: null
       - key: REDIS_PORT
         value: 6379
+      - key: DB_CONNECTION_TYPE
+        value: pgsql
+      - key: LARAVEL_DEFAULT_CONNECTION
+        value: pgsql
