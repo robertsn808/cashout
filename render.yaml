@@ -20,15 +20,15 @@ services:
       - key: DB_COLLATION
         value: utf8_unicode_ci
       - key: DB_HOST
-        value: 127.0.0.1
+        value: dpg-d29o6jer433s739kdoqg-a.oregon-postgres.render.com
       - key: DB_PORT
-        value: 5469
+        value: 5432
       - key: DB_DATABASE
-        value: casino_db
+        value: upp_production
       - key: DB_USERNAME
-        value: casino_user
+        value: upp_user
       - key: DB_PASSWORD
-        generateValue: true
+        value: X7qWuFeFEaMSGrauo2EVOfvQx0RY0Erm
       - key: CACHE_DRIVER
         value: redis
       - key: SESSION_DRIVER
