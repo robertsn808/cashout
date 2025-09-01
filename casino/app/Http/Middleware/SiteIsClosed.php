@@ -13,10 +13,11 @@ namespace VanguardLTE\Http\Middleware
             {
                 return $next($request);
             }
-            if( settings('siteisclosed') ) 
-            {
-                return response()->view('system.pages.siteisclosed', [], 200)->header('Content-Type', 'text/html');
-            }
+            // Site closed check disabled to fix 404 and turn off site closure
+            // if( settings('siteisclosed') ) 
+            // {
+            //     return response()->view('system.pages.siteisclosed', [], 200)->header('Content-Type', 'text/html');
+            // }
             return $next($request);
         }
     }
