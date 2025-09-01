@@ -103,7 +103,7 @@ namespace VanguardLTE\Http\Controllers\Web\Frontend
                 }
                 if( count($categories) > 0 ) 
                 {
-                    $games = $games->whereRaw('original_id IN (SELECT game_id FROM `w_game_categories` WHERE category_id IN(' . implode(',', $categories) . '))');
+                    $games = $games->whereRaw('original_id IN (SELECT game_id FROM w_game_categories WHERE category_id IN(' . implode(',', $categories) . '))');
                     if( $category1 == 'my_games' ) 
                     {
                         $my_games = \VanguardLTE\Lib\GetHotNewMyGames::get_my_games();

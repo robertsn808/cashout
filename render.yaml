@@ -14,27 +14,33 @@ services:
       - key: APP_URL
         value: https://cashout-0om5.onrender.com
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_CHARSET
         value: utf8
       - key: DB_COLLATION
         value: utf8_unicode_ci
       - key: DB_HOST
-        value: 127.0.0.1
+        value: dpg-d29o6jer433s739kdoqg-a.oregon-postgres.render.com
       - key: DB_PORT
-        value: 3306
+        value: 5432
       - key: DB_DATABASE
-        value: casino_db
+        value: upp_production
       - key: DB_USERNAME
-        value: casino_user
+        value: upp_user
       - key: DB_PASSWORD
-        sync: false
+        value: X7qWuFeFEaMSGrauo2EVOfvQx0RY0Erm
       - key: CACHE_DRIVER
-        value: file
+        value: redis
       - key: SESSION_DRIVER
-        value: file
+        value: redis
       - key: QUEUE_CONNECTION
-        value: database
+        value: redis
+      - key: REDIS_HOST
+        value: 127.0.0.1
+      - key: REDIS_PASSWORD
+        value: null
+      - key: REDIS_PORT
+        value: 6379
       - key: DB_CONNECTION_TYPE
         value: pgsql
       - key: LARAVEL_DEFAULT_CONNECTION
