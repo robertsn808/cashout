@@ -42,7 +42,7 @@
     "generate-function": "^2.3.1",
     "getpass": "^0.1.7",
     "har-schema": "^2.0.0",
-    "har-validator": "^5.1.5",
+    
     "has-binary2": "^2.0.0",
     "has-cors": "^1.1.0",
     "http-signature": "^1.3.6",
@@ -74,7 +74,7 @@
     "negotiator": "^0.6.3",
     "oauth-sign": "^0.9.0",
     "object-component": "^0.0.3",
-    "package-lock.json": "^1.0.0",
+    
     "parseqs": "^0.0.6",
     "parseuri": "^0.0.6",
     "performance-now": "^2.1.0",
@@ -86,7 +86,7 @@
     "redis-commands": "^1.7.0",
     "redis-errors": "^1.2.0",
     "redis-parser": "^3.0.0",
-    "request": "^2.88.2",
+    
     "safe-buffer": "^5.2.1",
     "safer-buffer": "^2.1.2",
     "seq-queue": "^0.0.5",
@@ -106,7 +106,7 @@
     "verror": "^1.10.1",
     "ws": "^8.8.1",
     "xmlhttprequest-ssl": "^2.0.0",
-    "yaeti": "^1.0.3",
+    
     "yallist": "^4.0.0",
     "yeast": "^0.1.2"
   }
