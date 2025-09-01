@@ -39,5 +39,6 @@ CMD sh -lc '\
   php artisan cache:clear; \
   (php artisan migrate:status >/dev/null 2>&1 && echo "Database already migrated" || php artisan migrate --force || true); \
   ([ -d /app/casino/PTWebSocket ] && cd /app/casino/PTWebSocket && npx pm2 start Arcade.js && npx pm2 start Server.js && npx pm2 start Slots.js || true); \
-  php -S 0.0.0.0:$PORT -t /app \
+  # Serve Laravel correctly from the public directory using the router script \
+  php -S 0.0.0.0:$PORT -t /app/casino/public /app/casino/server.php \
 '

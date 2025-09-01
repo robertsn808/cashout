@@ -12,7 +12,7 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        value: https://captain-cashout.onrender.com
+        value: https://cashout-0om5.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_CHARSET
