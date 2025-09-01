@@ -25,15 +25,19 @@ ENV PORT=8080
 EXPOSE 8080
 CMD sh -lc '\
   cd /app/casino; \
-  echo "Updating .env with environment variables..."; \
+  echo "Setting up environment..."; \
+  cp .env.production .env; \
   sed -i "s/DB_HOST=.*/DB_HOST=${DB_HOST:-127.0.0.1}/" .env; \
   sed -i "s/DB_PORT=.*/DB_PORT=${DB_PORT:-5469}/" .env; \
   sed -i "s/DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE:-casino_db}/" .env; \
   sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_USERNAME:-casino_user}/" .env; \
-  sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD:-}/" .env; \
+  sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" .env; \
   sed -i "s/APP_ENV=.*/APP_ENV=${APP_ENV:-production}/" .env; \
   sed -i "s/APP_DEBUG=.*/APP_DEBUG=${APP_DEBUG:-false}/" .env; \
-  (php artisan migrate:status && echo "Migrations already exist, skipping" || php artisan migrate --force || true); \
+  sed -i "s|APP_URL=.*|APP_URL=${APP_URL:-https://cashout-0om5.onrender.com}|" .env; \
+  php artisan config:clear; \
+  php artisan cache:clear; \
+  (php artisan migrate:status >/dev/null 2>&1 && echo "Database already migrated" || php artisan migrate --force || true); \
   ([ -d /app/casino/PTWebSocket ] && cd /app/casino/PTWebSocket && npx pm2 start Arcade.js && npx pm2 start Server.js && npx pm2 start Slots.js || true); \
   php -S 0.0.0.0:$PORT -t /app \
 '
