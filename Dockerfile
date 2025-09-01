@@ -27,5 +27,5 @@ CMD sh -lc '\
   cd /app/casino; \
   (php artisan migrate --force || true); \
   ([ -d /app/casino/PTWebSocket ] && cd /app/casino/PTWebSocket && npx pm2 start Arcade.js && npx pm2 start Server.js && npx pm2 start Slots.js || true); \
-  php -S 0.0.0.0:$PORT -t /app/casino/public \
+  php -S 0.0.0.0:$PORT -t /app \
 '
