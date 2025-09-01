@@ -32,7 +32,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Carbon::setLocale(config('app.locale'));
-        config(['app.name' => settings('app_name')]);
+        // Avoid hitting the database during build/package discovery or CLI-only contexts
+        try {
+            if (!app()->runningInConsole()) {
+                config(['app.name' => settings('app_name')]);
+            }
+        } catch (\Throwable $e) {
+            // Swallow errors when settings storage (DB) is unavailable
+        }
         \Illuminate\Database\Schema\Builder::defaultStringLength(191);
 
    /*      if($this->app->environment('production')) {
