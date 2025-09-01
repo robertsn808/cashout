@@ -45,8 +45,8 @@ CMD sh -lc '\
   sed -i "s|APP_URL=.*|APP_URL=${APP_URL:-https://cashout-0om5.onrender.com}|" .env || true; \
   php artisan config:clear; \
   php artisan cache:clear; \
-  # Optional: run framework migrations if any (non-fatal) \
-  (php artisan migrate --force || true); \
+  # Skip framework migrations at runtime (DB is pre-provisioned) \
+  echo "Skipping php artisan migrate at startup"; \
   ([ -d /app/casino/PTWebSocket ] && cd /app/casino/PTWebSocket && npx pm2 start Arcade.js && npx pm2 start Server.js && npx pm2 start Slots.js || true); \
   # Serve Laravel correctly from the public directory using the router script \
   php -S 0.0.0.0:$PORT -t /app/casino/public /app/casino/server.php \
