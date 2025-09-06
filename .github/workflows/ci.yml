@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  php-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: casino
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, curl, zip, gd, bcmath, pdo_mysql
+          coverage: none
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare app key
+        run: |
+          [ -f .env ] || cp .env.example .env
+          php artisan key:generate
+
+      - name: Run PHPUnit
+        run: ./vendor/bin/phpunit --no-coverage
+
+  build-assets:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: casino
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+
+      - name: Install and build
+        run: |
+          npm ci || npm install
+          npm run production || npm run dev
+        continue-on-error: true
+
