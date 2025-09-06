@@ -1,0 +1,180 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans every day at 3 AM UTC
+    - cron: '0 3 * * *'
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets-scan:
+    name: Scan for Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  semgrep-scan:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/php
+            p/javascript
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  supply-chain:
+    name: Supply Chain Security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # We'll add docker scanning once containers are implemented in PR 3
+      - name: Placeholder for Docker Security
+        run: echo "Docker security scanning will be enabled when containers are implemented"
+
+  malware-scan:
+    name: Malware & Backdoor Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install ClamAV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-daemon
+          sudo freshclam
+
+      - name: Run ClamAV scan
+        run: |
+          clamscan -r --bell -i . || echo "Potential malware detected - manual review required"
+
+      - name: Scan for suspicious patterns
+        run: |
+          echo "Scanning for suspicious code patterns..."
+          
+          # Look for common malware/backdoor patterns
+          MALWARE_PATTERNS=(
+            "\\$[a-zA-Z_][a-zA-Z0-9_]*\\s*=\\s*base64_decode"
+            "eval\\s*\\(\\s*base64_decode"
+            "gzinflate\\s*\\(\\s*base64_decode"
+            "str_rot13\\s*\\(\\s*base64_decode"
+            "\\$GLOBALS\\s*\\[.*\\]\\s*\\("
+            "create_function\\s*\\(.*eval"
+            "assert\\s*\\(\\s*base64_decode"
+            "preg_replace.*\\/e.*base64_decode"
+            "\\$_POST\\[.*\\]\\s*\\(\\s*\\$"
+            "\\$_GET\\[.*\\]\\s*\\(\\s*\\$"
+            "file_get_contents\\s*\\(\\s*[\"']php:\\/\\/input"
+            "fwrite\\s*\\(.*base64_decode"
+            "file_put_contents\\s*\\(.*base64_decode"
+          )
+          
+          FOUND_SUSPICIOUS=0
+          for pattern in "${MALWARE_PATTERNS[@]}"; do
+            echo "Checking pattern: $pattern"
+            if grep -r -n --include="*.php" -E "$pattern" . || true; then
+              echo "⚠️  Suspicious pattern found: $pattern"
+              FOUND_SUSPICIOUS=1
+            fi
+          done
+          
+          if [ $FOUND_SUSPICIOUS -eq 1 ]; then
+            echo "❌ Suspicious patterns detected - MANUAL REVIEW REQUIRED"
+            exit 1
+          else
+            echo "✅ No suspicious patterns detected"
+          fi
+
+      - name: Check file permissions and ownership
+        run: |
+          echo "Checking for suspicious file permissions..."
+          
+          # Check for overly permissive files
+          find . -type f -perm -002 -ls | head -20
+          
+          # Check for setuid/setgid files (should be none in a web app)
+          find . -type f \( -perm -4000 -o -perm -2000 \) -ls | head -10
+          
+          echo "File permission check completed"
+
+  license-compliance:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+        working-directory: casino
+
+      - name: Check composer licenses
+        run: |
+          if [ -f "vendor/bin/composer-license-checker" ]; then
+            vendor/bin/composer-license-checker check
+          else
+            composer require --dev dominikb/composer-license-checker --no-interaction
+            vendor/bin/composer-license-checker check --allow-list MIT,BSD-2-Clause,BSD-3-Clause,Apache-2.0,ISC,LGPL-2.1,LGPL-3.0 || echo "License compliance issues found"
+          fi
+        working-directory: casino

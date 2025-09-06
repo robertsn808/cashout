@@ -1,0 +1,179 @@
+# === SECURITY & SECRETS PROTECTION ===
+# These files should never be committed - will cause git to reject them
+.env filter=git-secrets
+*.key filter=git-secrets
+*.pem filter=git-secrets
+*.crt filter=git-secrets
+*.p12 filter=git-secrets
+*.pfx filter=git-secrets
+*.jks filter=git-secrets
+*.secret filter=git-secrets
+*.token filter=git-secrets
+**/ssl/** filter=git-secrets
+**/certs/** filter=git-secrets
+**/certificates/** filter=git-secrets
+
+# Database files should not be in git
+*.sql filter=git-secrets
+*.dump filter=git-secrets
+*.backup filter=git-secrets
+betshopme_*.sql filter=git-secrets
+
+# Configuration files with potential secrets
+config/database.local.php filter=git-secrets
+oauth-*.json filter=git-secrets
+service-account-*.json filter=git-secrets
+
+# === TEXT FILE HANDLING ===
+# Ensure consistent line endings
+*.php text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.less text eol=lf
+*.html text eol=lf
+*.htm text eol=lf
+*.xml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.ini text eol=lf
+*.conf text eol=lf
+*.htaccess text eol=lf
+.htaccess text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# SQL files (when allowed)
+*.sql text eol=lf
+
+# === BINARY FILES ===
+# Images
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.svg text
+*.webp binary
+*.bmp binary
+*.tiff binary
+*.tif binary
+
+# Fonts
+*.ttf binary
+*.otf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+
+# Documents
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.tar.bz2 binary
+*.tar.xz binary
+*.7z binary
+*.rar binary
+
+# Executables and libraries
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.a binary
+*.lib binary
+
+# === LANGUAGE SPECIFIC ===
+# PHP
+*.blade.php text eol=lf linguist-language=PHP
+
+# JavaScript/Node
+*.js text eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.vue text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+package.json text eol=lf
+package-lock.json text eol=lf
+*.npmrc text eol=lf
+
+# CSS/Styling
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+*.styl text eol=lf
+
+# === BUILD & CONFIG FILES ===
+# Docker
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+docker-compose.yml text eol=lf
+docker-compose.yaml text eol=lf
+.dockerignore text eol=lf
+
+# CI/CD
+*.yml text eol=lf
+*.yaml text eol=lf
+.github/** text eol=lf
+
+# Config files
+*.ini text eol=lf
+*.conf text eol=lf
+*.config text eol=lf
+.editorconfig text eol=lf
+.eslintrc text eol=lf
+.eslintrc.* text eol=lf
+.prettierrc text eol=lf
+.prettierrc.* text eol=lf
+
+# === SPECIAL HANDLING ===
+# Large files that should use Git LFS
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.ai filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.avi filter=lfs diff=lfs merge=lfs -text
+
+# Game assets (if needed)
+*.unity3d filter=lfs diff=lfs merge=lfs -text
+*.unitypackage filter=lfs diff=lfs merge=lfs -text
+
+# === LINGUIST OVERRIDES ===
+# Don't count certain files in language statistics
+*.generated.* linguist-generated=true
+vendor/** linguist-vendored=true
+node_modules/** linguist-vendored=true
+woocasino/js/vendor/** linguist-vendored=true
+frontend/*/js/vendor/** linguist-vendored=true
+
+# Treat Blade templates as PHP for syntax highlighting
+*.blade.php linguist-language=PHP
+
+# Mark documentation
+*.md linguist-documentation=true
+docs/** linguist-documentation=true
+
+# Export ignore (files not included in git archive/export)
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+docs/development/ export-ignore
+tests/ export-ignore
+.phpunit.xml export-ignore
+phpunit.xml export-ignore

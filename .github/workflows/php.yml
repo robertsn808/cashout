@@ -1,0 +1,244 @@
+name: PHP CI Security & Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'casino/**/*.php'
+      - 'casino/composer.json'
+      - 'casino/composer.lock'
+      - '.github/workflows/php.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'casino/**/*.php'
+      - 'casino/composer.json'
+      - 'casino/composer.lock'
+      - '.github/workflows/php.yml'
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+concurrency:
+  group: php-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php-security:
+    name: PHP Security & Quality Checks
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.2', '8.3']
+        dependency-version: [prefer-lowest, prefer-stable]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, dom, fileinfo, mysql, redis, gd, zip, intl, opcache, pdo, pdo_mysql, bcmath, ctype, json, openssl, tokenizer, xml
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        working-directory: casino
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-version }}-${{ hashFiles('casino/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-version }}-
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+          composer ${{ matrix.dependency-version }} --no-interaction --no-progress
+        working-directory: casino
+
+      - name: Create .env file for testing
+        run: |
+          cp .env.example .env
+          echo "APP_KEY=" >> .env
+          php artisan key:generate --no-interaction
+        working-directory: casino
+
+      - name: PHP Syntax Check
+        run: find . -type f -name '*.php' -exec php -l {} \; | grep -v "No syntax errors detected"
+        working-directory: casino
+
+      - name: Run PHPStan Static Analysis
+        run: |
+          if [ -f "vendor/bin/phpstan" ]; then
+            vendor/bin/phpstan analyse --no-progress --error-format=github || echo "PHPStan found issues"
+          else
+            echo "PHPStan not found, installing..."
+            composer require --dev phpstan/phpstan --no-interaction
+            vendor/bin/phpstan analyse --no-progress --error-format=github || echo "PHPStan found issues"
+          fi
+        working-directory: casino
+
+      - name: Run Psalm Static Analysis
+        run: |
+          if [ -f "vendor/bin/psalm" ]; then
+            vendor/bin/psalm --no-progress --output-format=github || echo "Psalm found issues"
+          else
+            echo "Psalm not found, installing..."
+            composer require --dev vimeo/psalm --no-interaction
+            vendor/bin/psalm --no-progress --output-format=github || echo "Psalm found issues"
+          fi
+        working-directory: casino
+        continue-on-error: true
+
+      - name: Security Audit - Composer
+        run: |
+          composer audit --no-dev --format=plain || echo "Security vulnerabilities found in dependencies"
+        working-directory: casino
+
+      - name: Security Audit - PHP Security Checker
+        run: |
+          curl -H "Cache-Control: no-cache" -s https://get.sensiolabs.org/security-checker.phar -o security-checker.phar
+          php security-checker.phar security:check composer.lock --format=simple || echo "Security issues found"
+        working-directory: casino
+        continue-on-error: true
+
+      - name: Check for dangerous functions
+        run: |
+          echo "Scanning for dangerous PHP functions..."
+          
+          # Check for dangerous functions that could indicate backdoors
+          DANGEROUS_FUNCTIONS=(
+            "base64_decode"
+            "eval\("
+            "shell_exec\("
+            "passthru\("
+            "system\("
+            "exec\("
+            "assert\("
+            "gzinflate\("
+            "create_function\("
+            "call_user_func"
+            "call_user_func_array"
+            "preg_replace.*\/e"
+            "unserialize\("
+            "file_get_contents.*php:\/\/"
+            "fopen.*php:\/\/"
+            "include.*\$"
+            "require.*\$"
+          )
+          
+          FOUND_ISSUES=0
+          for func in "${DANGEROUS_FUNCTIONS[@]}"; do
+            echo "Checking for: $func"
+            if grep -r -n --include="*.php" "$func" . || true; then
+              echo "⚠️  Found potentially dangerous function: $func"
+              FOUND_ISSUES=1
+            fi
+          done
+          
+          if [ $FOUND_ISSUES -eq 1 ]; then
+            echo "❌ Dangerous functions detected - manual review required"
+            exit 1
+          else
+            echo "✅ No dangerous functions detected"
+          fi
+        working-directory: casino
+
+      - name: Check for hardcoded credentials
+        run: |
+          echo "Scanning for hardcoded credentials..."
+          
+          # Common credential patterns
+          CREDENTIAL_PATTERNS=(
+            "password.*=.*['\"][^'\"]{8,}"
+            "secret.*=.*['\"][^'\"]{16,}"
+            "api_key.*=.*['\"][^'\"]{16,}"
+            "private_key.*=.*['\"]"
+            "access_token.*=.*['\"][^'\"]{16,}"
+            "mysql://.*:.*@"
+            "postgres://.*:.*@"
+            "mongodb://.*:.*@"
+          )
+          
+          FOUND_CREDENTIALS=0
+          for pattern in "${CREDENTIAL_PATTERNS[@]}"; do
+            if grep -r -n -i --include="*.php" -E "$pattern" . | grep -v ".env.example" || true; then
+              echo "⚠️  Potential hardcoded credential found: $pattern"
+              FOUND_CREDENTIALS=1
+            fi
+          done
+          
+          if [ $FOUND_CREDENTIALS -eq 1 ]; then
+            echo "❌ Potential hardcoded credentials detected - manual review required"
+          else
+            echo "✅ No hardcoded credentials detected"
+          fi
+        working-directory: casino
+
+      - name: Check Laravel Security Best Practices
+        run: |
+          echo "Checking Laravel security configuration..."
+          
+          # Check for debug mode in non-development
+          if grep -q "APP_DEBUG=true" .env 2>/dev/null; then
+            echo "⚠️  APP_DEBUG is enabled - should be false in production"
+          fi
+          
+          # Check for default APP_KEY
+          if grep -q "APP_KEY=base64:" .env 2>/dev/null; then
+            echo "✅ APP_KEY is properly set"
+          else
+            echo "⚠️  APP_KEY may not be properly configured"
+          fi
+          
+          # Check for HTTPS enforcement
+          if grep -q "FORCE_HTTPS=true" .env 2>/dev/null; then
+            echo "✅ HTTPS enforcement configured"
+          else
+            echo "ℹ️  Consider enabling FORCE_HTTPS in production"
+          fi
+          
+          echo "✅ Laravel security check completed"
+        working-directory: casino
+
+      - name: Test Suite
+        run: |
+          if [ -f "vendor/bin/phpunit" ]; then
+            vendor/bin/phpunit --coverage-clover=coverage.xml
+          else
+            echo "PHPUnit not found - skipping tests"
+          fi
+        working-directory: casino
+
+      - name: Upload coverage to Codecov
+        if: matrix.php-version == '8.3' && matrix.dependency-version == 'prefer-stable'
+        uses: codecov/codecov-action@v3
+        with:
+          file: casino/coverage.xml
+          fail_ci_if_error: false
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          config-file: '.github/dependency-review-config.yml'

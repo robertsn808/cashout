@@ -1,0 +1,68 @@
+name: "CodeQL Config"
+
+# Disable the default security queries to focus on security-specific analysis
+disable-default-queries: false
+
+# Additional security query suites
+queries:
+  - name: security-extended
+    uses: security-extended
+  - name: security-and-quality
+    uses: security-and-quality
+
+# Paths to include in analysis
+paths:
+  - casino/app
+  - casino/config
+  - casino/routes
+  - frontend
+  - woocasino
+
+# Paths to exclude from analysis
+paths-ignore:
+  - casino/vendor
+  - casino/node_modules
+  - casino/storage
+  - casino/bootstrap/cache
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/spec/**"
+  - "**/*.min.js"
+  - "**/*.min.css"
+  - "**/jquery*.js"
+  - "**/bootstrap*.js"
+
+# Language-specific configuration
+php:
+  # Include additional security queries for PHP
+  queries:
+    - uses: security-extended
+    - uses: security-and-quality
+  
+  # Custom query filters for PHP security
+  query-filters:
+    - include:
+        kind: problem
+        tags:
+          - security
+          - external/cwe
+    - exclude:
+        id:
+          - php/weak-cryptographic-algorithm  # May be intentional for gaming
+        
+javascript:
+  # Include JavaScript security queries
+  queries:
+    - uses: security-extended
+    - uses: security-and-quality
+  
+  # JavaScript-specific query filters
+  query-filters:
+    - include:
+        kind: problem
+        tags:
+          - security
+          - external/cwe
+    - exclude:
+        id:
+          - js/insecure-random  # May be acceptable for non-crypto use

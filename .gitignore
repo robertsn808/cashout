@@ -1,0 +1,198 @@
+# === SECURITY & SECRETS ===
+# Never commit these files to git
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.jks
+casino/PTWebSocket/ssl/
+ssl/
+certs/
+certificates/
+
+# Database credentials and configs
+config/database.local.php
+*.sql
+*.dump
+*.backup
+betshopme_*.sql
+v*.sql
+
+# API Keys and tokens
+**/api-keys/
+**/secrets/
+*.secret
+*.token
+oauth-*.json
+service-account-*.json
+aws-credentials
+gcp-credentials
+
+# === LARAVEL ===
+casino/vendor/
+casino/node_modules/
+casino/public/hot
+casino/public/storage
+casino/storage/*.key
+casino/storage/app/public/
+casino/storage/framework/cache/data/
+casino/storage/framework/sessions/
+casino/storage/framework/testing/
+casino/storage/framework/views/
+casino/storage/logs/*.log
+casino/bootstrap/cache/*.php
+
+# Laravel-specific config
+casino/.env
+casino/.env.backup
+casino/.env.production
+casino/.env.local
+casino/.env.testing
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# === NODE.JS ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime and temp files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# === DEVELOPMENT & IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.buildpath
+
+# === LOGS & DEBUG ===
+*.log
+logs/
+debug.log
+error.log
+access.log
+laravel.log
+npm-debug.log
+yarn-error.log
+
+# === INSTALLATION & SETUP FILES ===
+# Remove dangerous installation artifacts
+install.php
+installer.php
+setup.php
+install/
+installer/
+migration.php
+
+# Database dumps and setup
+*.sql
+*.dump
+*.backup
+betshopme_*.sql
+v*.sql
+database-*.sql
+db-backup-*.sql
+
+# Setup documentation with credentials
+"Setup your server with Apache.pdf"
+"Server Setup*.pdf"
+setup-*.pdf
+install-*.pdf
+
+# === BUILD & DISTRIBUTION ===
+build/
+dist/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+
+# === DOCKER & CONTAINERS ===
+docker-compose.override.yml
+.dockerignore
+Dockerfile.local
+
+# === BACKUP & RECOVERY ===
+*.backup
+*.bak
+*.old
+backup/
+backups/
+*.recovery
+
+# === CASINO SPECIFIC ===
+# Game assets that should be managed separately
+woocasino/games/
+game-packs/
+games-*.zip
+*.game
+
+# User uploads and generated content
+casino/storage/app/uploads/
+casino/public/uploads/
+uploads/
+
+# Socket and daemon files
+*.sock
+*.pid
+pm2.json
+ecosystem.config.js
+
+# === TEMPORARY & CACHE ===
+tmp/
+temp/
+.tmp/
+cache/
+.cache/
+storage/cache/
+storage/tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === TESTING ===
+coverage/
+.nyc_output/
+.coverage/
+htmlcov/
+.pytest_cache/
+.phpunit.result.cache
+tests/coverage/
+
+# === PACKAGE MANAGERS ===
+package-lock.json
+yarn.lock
+composer.lock
+# Keep these files unless you want floating versions:
+# !package-lock.json
+# !yarn.lock
+# !composer.lock

@@ -1,0 +1,75 @@
+name: 'Dependency Review Config'
+
+# Configuration for the dependency review action
+# See: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-dependency-review
+
+# Fail the action if any vulnerabilities are found with these severities
+fail-on-severity: critical
+
+# Allow licenses (SPDX identifiers)
+allow-licenses:
+  - MIT
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - Apache-2.0
+  - ISC
+  - LGPL-2.1-only
+  - LGPL-2.1-or-later
+  - LGPL-3.0-only
+  - LGPL-3.0-or-later
+  - GPL-2.0-only
+  - GPL-2.0-or-later
+  - GPL-3.0-only
+  - GPL-3.0-or-later
+
+# Deny licenses (will fail if found)
+deny-licenses:
+  - AGPL-1.0-only
+  - AGPL-1.0-or-later
+  - AGPL-3.0-only
+  - AGPL-3.0-or-later
+  - GPL-1.0-only
+  - GPL-1.0-or-later
+
+# Allow specific packages with otherwise denied licenses
+allow-dependencies-licenses:
+  - pkg:composer/doctrine/lexer@GPL-2.0-only
+  - pkg:composer/sebastian/global-state@GPL-3.0-or-later
+
+# Fail if new dependencies are added with these scopes
+fail-on-scopes:
+  - runtime
+  - development
+
+# Allow vulnerabilities for specific packages (use sparingly and with justification)
+allow-vulnerabilities:
+  []
+
+# Allow specific package URLs (for private packages)
+allow-ghsas:
+  []
+
+# Configuration for comment creation
+comment-summary-in-pr: always
+
+# Deny packages (will fail if found)
+deny-packages:
+  - pkg:composer/illuminate/support@<8.0.0  # Require modern Laravel
+  - pkg:npm/lodash@<4.17.21  # Known vulnerabilities in older versions
+  
+# Custom configuration for different ecosystems
+config-file: |
+  {
+    "php": {
+      "composer": {
+        "allow_licenses": ["MIT", "BSD-2-Clause", "BSD-3-Clause", "Apache-2.0"],
+        "deny_packages": []
+      }
+    },
+    "javascript": {
+      "npm": {
+        "allow_licenses": ["MIT", "ISC", "BSD-2-Clause", "BSD-3-Clause", "Apache-2.0"],
+        "deny_packages": ["lodash@<4.17.21"]
+      }
+    }
+  }
